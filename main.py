@@ -1,24 +1,24 @@
 """
 naming conventions
-
 class names = camelCase
 normal variables and functions = names_with_underscore
 global variables = CAPITAL
-global constant varibales = CONST_CAPITAL
+global constant varibales = CAPITAL_CONST
 """
+
 import firebase_admin
 from firebase_admin import credentials
 import connection
 import threading
 
-FIREBASE_URL_CONST = "https://fir-96f6c.firebaseio.com"
-PRIVATE_KEY_PATH = "fir-96f6c-aefe897b7e40.json"
+FIREBASE_URL_CONST = ""
+PRIVATE_KEY_PATH = ""
 
 def thread():
     t1 = threading.Thread(target=connection.get_gps, args=(vehicles,))
-    #t2 = threading.Thread(target=connection.get_rfid, args=(vehicles,))
+    t2 = threading.Thread(target=connection.get_rfid, args=(vehicles,))
     t1.start()
-    #t2.start()
+    t2.start()
     """
     works without the following codes as well
     as you start a thread, main function is also keeps executing
@@ -40,8 +40,6 @@ if __name__ == "__main__":
     vehicles = connection.connect()
     
     thread()
-    #connection.updating_gps(vehicles, "KA05JX7838", 37.7982, -122.4314)
-    #connection.printing(vehicles)
     
     
 

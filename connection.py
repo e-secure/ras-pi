@@ -1,13 +1,18 @@
-#from firebase import firebase
 from firebase_admin import db
 import datetime
 
-TABLE_VEHICLES_CONST = "/vehicles"
+TABLE_VEHICLES_CONST = ""
 
 #as of now, we are operating only on 1 vehicle
 #so this is the id of the object we are working on
-GAADI_CONST = "KA05JX7838"
+GAADI_CONST = ""
 
+def connect():
+    print("trying to connect to table vehicles\n")
+    vehicles = db.reference(TABLE_VEHICLES_CONST)
+    if vehicles:
+        print("table vehicles connected successfully\n")
+    return vehicles
 
 def updating_gps(vehicles, gaadi, latitude, longitude):
     vehicle_child = vehicles.child(gaadi)
@@ -30,7 +35,7 @@ def get_gps(vehicles):
         fill this function with your code to get gps coordinates
         vehicles is the json file consiting the gaadi details
         """
-        updating_gps(vehicles, GAADI_CONST, latitude = 37.7982, longitude = -122.4314)
+        updating_gps(vehicles, GAADI_CONST, latitude, longitude)
 
 def updating_rfid(vehicles, gaadi, rfid_status):
     vehicle_child = vehicles.child(gaadi)
@@ -47,14 +52,7 @@ def get_rfid(vehicles):
         put an if statement, that if the rfid is detected,
         then only call updating_rfid
         """
-        updating_rfid(vehicles, GAADI_CONST, rfid_status = "changed")
-
-def connect():
-    print("trying to connect to table vehicles\n")
-    vehicles = db.reference(TABLE_VEHICLES_CONST)
-    if vehicles:
-        print("table vehicles connected successfully\n")
-    return vehicles
+        updating_rfid(vehicles, GAADI_CONST, rfid_status)
 
 def printing(vehicles):
     print(vehicles.get())
