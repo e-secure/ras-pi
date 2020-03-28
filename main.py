@@ -1,0 +1,49 @@
+"""
+naming conventions
+
+class names = camelCase
+normal variables and functions = names_with_underscore
+global variables = CAPITAL
+global constant varibales = CONST_CAPITAL
+"""
+import firebase_admin
+from firebase_admin import credentials
+import connection
+import threading
+
+FIREBASE_URL_CONST = "https://fir-96f6c.firebaseio.com"
+PRIVATE_KEY_PATH = "fir-96f6c-aefe897b7e40.json"
+
+def thread():
+    t1 = threading.Thread(target=connection.get_gps, args=(vehicles,))
+    #t2 = threading.Thread(target=connection.get_rfid, args=(vehicles,))
+    t1.start()
+    #t2.start()
+    """
+    works without the following codes as well
+    as you start a thread, main function is also keeps executing
+    so for the main function to not terminate and wait for the
+    threads to finish executing, .join() is used
+    """
+    #t1.join()
+    #t2.join()
+
+
+if __name__ == "__main__":
+    import sys
+
+    cred = credentials.Certificate(PRIVATE_KEY_PATH)
+    firebase_admin.initialize_app(cred, {
+    'databaseURL': FIREBASE_URL_CONST
+    })
+
+    vehicles = connection.connect()
+    
+    thread()
+    #connection.updating_gps(vehicles, "KA05JX7838", 37.7982, -122.4314)
+    #connection.printing(vehicles)
+    
+    
+
+
+
