@@ -1,11 +1,11 @@
 from firebase_admin import db
 import datetime
 
-TABLE_VEHICLES_CONST = "/vehicles"
+TABLE_VEHICLES_CONST = ""
 
 #as of now, we are operating only on 1 vehicle
 #so this is the id of the object we are working on
-GAADI_CONST = "KA05JX7838"
+GAADI_CONST = ""
 
 def connect():
     print("trying to connect to table vehicles\n")
