@@ -12,22 +12,15 @@ import connection
 import threading
 
 FIREBASE_URL_CONST = ""
-PRIVATE_KEY_PATH = ""
+PRIVATE_KEY_PATH   = ""
 
 def thread():
-    t1 = threading.Thread(target=connection.get_gps, args=(vehicles,))
-    t2 = threading.Thread(target=connection.get_rfid, args=(vehicles,))
+    t1 = threading.Thread(target=hardware.get_gps)
+    t2 = threading.Thread(target=hardware.get_rfid)
+    t3 = threading.Thread(target=hardware.get_camera)
     t1.start()
     t2.start()
-    """
-    works without the following codes as well
-    as you start a thread, main function is also keeps executing
-    so for the main function to not terminate and wait for the
-    threads to finish executing, .join() is used
-    """
-    #t1.join()
-    #t2.join()
-
+    t3.start()
 
 if __name__ == "__main__":
     import sys
@@ -37,11 +30,5 @@ if __name__ == "__main__":
     'databaseURL': FIREBASE_URL_CONST
     })
 
-    vehicles = connection.connect()
-    
+    hardware = connection.hardware()
     thread()
-    
-    
-
-
-
