@@ -11,8 +11,8 @@ from firebase_admin import credentials
 import connection
 import threading
 
-FIREBASE_URL_CONST = "https://fir-96f6c.firebaseio.com"
-PRIVATE_KEY_PATH = "../fir-96f6c-aefe897b7e40.json"
+FIREBASE_URL_CONST = ""
+PRIVATE_KEY_PATH = ""
 
 def thread():
     t1 = threading.Thread(target=connection.get_gps, args=(vehicles,))
