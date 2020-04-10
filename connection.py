@@ -5,12 +5,11 @@ from mfrc522 import SimpleMFRC522
 import time
 import picamera
 import base64
-TABLE_VEHICLES_CONST = "/vehicles"
+TABLE_VEHICLES_CONST = ""
 
 #as of now, we are operating only on 1 vehicle
 #so this is the id of the object we are working on
-GAADI_CONST = "KA05JX7838"
-#PASS="gGallo                                          "
+GAADI_CONST = ""
 
 def capture():
     cam=picamera.PiCamera()
