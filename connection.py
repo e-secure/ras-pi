@@ -116,3 +116,45 @@ class hardware:
         })
         print("updated rfid status, vehicle status: ", rfid_status, 
                 self.vehicle_status, "at", datetime.datetime.now())
+
+    def get_camera(self):
+        while True:
+            if self.vehicle_status != "secure":
+                cam = picamera.PiCamera()
+                cam.resolution=(256,256)
+                cam.brightness=60
+                cam.start_preview()
+                cam.capture('img.jpeg')
+                cam.stop_preview()
+                img = open('img.jpeg','rb')
+                bs64 = base64.b64encode(img.read()).decode('ascii')
+                img.close()
+                cam.close()
+                self.update_camera(bs64)
+                time.sleep(5)
+
+    def update_camera(self, bs64):
+        images = self.vehicle.child("images")
+
+        img = "img" + str(self.img_count)
+
+        images.update({
+            img : {
+                "base64": bs64,
+                "dateTime": str(datetime.datetime.now()),
+                "id": img,
+                "location": {
+                    "latitude": self.latitude,
+                    "longitude": self.longitude
+                }
+            }
+        })
+        print("updated image at", datetime.datetime.now())
+
+        self.img_count += 1
+
+        self.vehicle.update({
+            "counter": self.img_count
+        })
+        print("updated image count:", self.img_count, "at",
+             datetime.datetime.now())
