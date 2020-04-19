@@ -61,7 +61,7 @@ class piHandler:
             print("updated latitude: " + str(self.latitude) + ", longitude: "
                 + str(self.longitude) + " at ", datetime.datetime.now())
 
-            if self.vehicle.child("rfid").get()["status"] == "locked" or self.vehicle.child("rfid").get()["status"] == "lost" or self.vehicle.child("rfid").get()["status"] == "new key":
+            if self.vehicle.child("rfid").get()["status"] == "locked" or self.vehicle.child("rfid").get()["status"] == "lost" or self.vehicle.child("rfid").get()["status"] == "new_key":
                 self.vehicle_status = "Unauthorized movement"
                 self.vehicle.update({
                     "status": self.vehicle_status
