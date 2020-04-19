@@ -5,8 +5,9 @@ from mfrc522 import SimpleMFRC522
 import time
 import picamera
 import base64
+import random
 
-class hardware:
+class piHandler:
 
     def __init__(self):
         self.GAADI_CONST    = ""
@@ -60,36 +61,63 @@ class hardware:
             print("updated latitude: " + str(self.latitude) + ", longitude: "
                 + str(self.longitude) + " at ", datetime.datetime.now())
 
-            if(self.vehicle.child("rfid").get()["status"] == "locked"):
-                self.vehicle_status = "alert"
+            if self.vehicle.child("rfid").get()["status"] == "locked" or self.vehicle.child("rfid").get()["status"] == "lost" or self.vehicle.child("rfid").get()["status"] == "new key":
+                self.vehicle_status = "Unauthorized movement"
                 self.vehicle.update({
                     "status": self.vehicle_status
                 })
-                print("updated vehicle statuss: ",self.vehicle_status,
+                print("updated vehicle status: ",self.vehicle_status,
                         "at", datetime.datetime.now())
         return current_latitude, current_longitude
 
     def get_rfid(self):
-        rfid_password = self.vehicle.child("rfid").get()["password"]
-        tag = SimpleMFRC522()
-
+        l=['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0','!','@','#','$','%','^','&','*','_','-','+','=','/','\\','|']
+        rfid = self.vehicle.child("rfid")
         while True:
-            time.sleep(1)
-            try:
-                print("Place tag on the reader")
-                id, text = tag.read()
-                print(id)
-                print(text)
-                print("authenticating")
-                if text == rfid_password:
-                    print("pass is correct")
+            rfid_password = self.vehicle.child("rfid").get()["password"]
+            rfid_id = self.vehicle.child("rfid").get()["id"]
+            rfid_status= self.vehicle.child("rfid").get()["status"]
+            tag = SimpleMFRC522()
+            print(rfid_status+"sumanth")
+            if rfid_status == "locked" or rfid_status == "unlocked":
+                print("noob")
+                try:
+                    time.sleep(1)
+                    print("Place tag on the reader")
+                    id, text = tag.read()
+                    print("authenticating")
+                    if text == rfid_password and id==rfid_id:
+                        print("pass is correct")
+                        self.update_rfid(1)
+                    elif text == rfid_password and id!=rfid_id:
+                        self.update_rfid(2)
+                    else:
+                        self.update_rfid(0)
+                finally:
                     GPIO.cleanup()
-                    self.update_rfid(1)
-                else:
+            elif rfid_status == "new_key":
+                print("pro")
+                newpass=""
+                try:
+                    print("Place tag on the reader")
+                    id,text=tag.read()
+                    for i in range(len(rfid_password)):
+                        j=random.randint(0,len(l)-1)
+                        newpass=newpass+l[j]
+                    print(newpass)
+                    tag.write(newpass)
+                    print("Password updated")
+                    rfid.update({
+                        "status":"locked",
+                        "id":id,
+                        "password":newpass
+                        })
+                    newpass=''
+                    print("New key registered!")
+                finally:
                     GPIO.cleanup()
-                    self.update_rfid(0)
-            finally:
-                GPIO.cleanup()
+            else:
+                print("waiting")
 
     def update_rfid(self, x):
         rfid        = self.vehicle.child("rfid")
@@ -98,16 +126,26 @@ class hardware:
         if x==1:
             if rfid_status == "locked":
                 rfid_status = "unlocked"
-            else:
+            elif rfid_status == "unlocked":
                 rfid_status = "locked"
-
-            if self.vehicle_status == "unauthorized access":
+            if self.vehicle_status == "Unauthorized access":
                 self.vehicle_status = "secure"
-        else:
-            print("Incorrect password.. Unauthorized access")
-            self.vehicle_status = "unauthorized access"
+        elif x==2:
+            print("correct password.. Invalid Key.")
+            warning = "RFID duplication attempt warning"
+            self.vehicle_status = "Unauthorized access"
             rfid_status = "locked"
-
+            self.vehicle.update({
+            "warning": warning
+            })   
+        else:
+            if rfid_status == "locked" or rfid_status == "unlocked":
+                print("Incorrect password.. Unauthorized access")
+                self.vehicle_status = "Unauthorized access"
+                rfid_status = "locked"
+            else:
+                print("Incorrect password.. Unauthorized access")
+                self.vehicle_status = "Unauthorized access"
         self.vehicle.update({
             "status": self.vehicle_status
         })            
@@ -116,7 +154,7 @@ class hardware:
         })
         print("updated rfid status, vehicle status: ", rfid_status, 
                 self.vehicle_status, "at", datetime.datetime.now())
-
+    
     def get_camera(self):
         while True:
             if self.vehicle_status != "secure":
@@ -129,15 +167,17 @@ class hardware:
                 img = open('img.jpeg','rb')
                 bs64 = base64.b64encode(img.read()).decode('ascii')
                 img.close()
-                cam.close()
                 self.update_camera(bs64)
+                cam.close()
                 time.sleep(5)
-
+            else:
+                time.sleep(1)
+            
     def update_camera(self, bs64):
         images = self.vehicle.child("images")
-
-        img = "img" + str(self.img_count)
-
+        ctr=str(self.img_count)
+        ctr=ctr.zfill(5)
+        img = "IMG_" + ctr
         images.update({
             img : {
                 "base64": bs64,

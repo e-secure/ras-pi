@@ -8,7 +8,7 @@ global constant varibales = CAPITAL_CONST
 
 import firebase_admin
 from firebase_admin import credentials
-import connection
+import connection3
 import threading
 
 FIREBASE_URL_CONST = ""
@@ -30,5 +30,5 @@ if __name__ == "__main__":
     'databaseURL': FIREBASE_URL_CONST
     })
 
-    hardware = connection.hardware()
+    hardware = connection3.piHandler()
     thread()
