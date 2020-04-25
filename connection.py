@@ -24,7 +24,7 @@ class piHandler:
         self.event_count    = self.events.get()["counter"]
 
     def connectTable(self, table_name):
-        print("trying to connect to table {} \n" .format(table_name[1:]))
+        print("trying to connect to table {}\n" .format(table_name[1:]))
         table = db.reference(table_name)
         if table:
             print("table {} connected successfully\n" .format(table_name[1:]))
