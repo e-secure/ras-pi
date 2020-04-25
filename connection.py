@@ -69,9 +69,7 @@ class piHandler:
                 self.vehicle.update({
                     "status": self.vehicle_status
                 })
-                self.events.update({
-                    str(datetime.datetime.now): self.vehicle_status
-                })
+                self.updateEvents()
                 print("updated vehicle status: ",self.vehicle_status,
                         "at", datetime.datetime.now())
         return current_latitude, current_longitude
@@ -151,9 +149,7 @@ class piHandler:
         self.vehicle.update({
             "status": self.vehicle_status
         })
-        self.events.update({
-            str(datetime.datetime.now): self.vehicle_status
-        })
+        self.updateEvents()
         rfid.update({
             "status": rfid_status
         })
