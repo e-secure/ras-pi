@@ -8,11 +8,11 @@ global constant varibales = CAPITAL_CONST
 
 import firebase_admin
 from firebase_admin import credentials
-import connection3
+import connection
 import threading
 
 FIREBASE_URL_CONST = ""
-PRIVATE_KEY_PATH   = ""
+PRIVATE_KEY_PATH = ""
 
 def thread():
     t1 = threading.Thread(target=hardware.get_gps)
@@ -30,5 +30,5 @@ if __name__ == "__main__":
     'databaseURL': FIREBASE_URL_CONST
     })
 
-    hardware = connection3.piHandler()
+    hardware = connection.piHandler()
     thread()

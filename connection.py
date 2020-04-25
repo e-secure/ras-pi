@@ -11,23 +11,24 @@ class piHandler:
 
     def __init__(self):
         self.GAADI_CONST    = ""
-        self.PASS           = ""
-        self.vehicles_db    = self.connect()
+        self.vehicles_db    = self.connectTable("")
         self.vehicle        = self.vehicles_db.child(self.GAADI_CONST)
         self.location       = self.vehicle.child("location")
+
+        self.events         = self.connectTable("")
         
         self.vehicle_status = self.vehicle.get()["status"]
         self.img_count      = self.vehicle.get()["counter"]
         self.latitude       = self.location.get()["latitude"]
         self.longitude      = self.location.get()["longitude"]
+        self.event_count    = self.events.get()["counter"]
 
-    def connect(self):
-        TABLE_VEHICLES_CONST = ""
-        print("trying to connect to table vehicles\n")
-        vehicles = db.reference(TABLE_VEHICLES_CONST)
-        if vehicles:
-            print("table vehicles connected successfully\n")
-        return vehicles
+    def connectTable(self, table_name):
+        print("trying to connect to table {} \n" .format(table_name[1:]))
+        table = db.reference(table_name)
+        if table:
+            print("table {} connected successfully\n" .format(table_name[1:]))
+        return table
 
     def get_gps(self):
         current_latitude  = self.latitude
@@ -61,10 +62,15 @@ class piHandler:
             print("updated latitude: " + str(self.latitude) + ", longitude: "
                 + str(self.longitude) + " at ", datetime.datetime.now())
 
-            if self.vehicle.child("rfid").get()["status"] == "locked" or self.vehicle.child("rfid").get()["status"] == "lost" or self.vehicle.child("rfid").get()["status"] == "new_key":
+            rfid_status = self.vehicle.child("rfid").get()["status"]
+
+            if rfid_status == "locked" or rfid_status == "lost" or rfid_status == "new_key":
                 self.vehicle_status = "Unauthorized movement"
                 self.vehicle.update({
                     "status": self.vehicle_status
+                })
+                self.events.update({
+                    str(datetime.datetime.now): self.vehicle_status
                 })
                 print("updated vehicle status: ",self.vehicle_status,
                         "at", datetime.datetime.now())
@@ -132,12 +138,8 @@ class piHandler:
                 self.vehicle_status = "secure"
         elif x==2:
             print("correct password.. Invalid Key.")
-            warning = "RFID duplication attempt warning"
             self.vehicle_status = "Unauthorized access"
             rfid_status = "locked"
-            self.vehicle.update({
-            "warning": warning
-            })   
         else:
             if rfid_status == "locked" or rfid_status == "unlocked":
                 print("Incorrect password.. Unauthorized access")
@@ -148,7 +150,10 @@ class piHandler:
                 self.vehicle_status = "Unauthorized access"
         self.vehicle.update({
             "status": self.vehicle_status
-        })            
+        })
+        self.events.update({
+            str(datetime.datetime.now): self.vehicle_status
+        })
         rfid.update({
             "status": rfid_status
         })
@@ -198,3 +203,20 @@ class piHandler:
         })
         print("updated image count:", self.img_count, "at",
              datetime.datetime.now())
+
+    def updateEvents(self):
+        counter = str(self.event_count)
+        counter = counter.zfill(5)
+        date    = str(datetime.datetime.now())
+        eventId = "event" + str(counter)
+        
+        self.event_count += 1
+        
+        self.events.update({
+            eventId : {
+                "time"   : date,
+                "status" : self.vehicle_status
+            },
+            "counter" : self.event_count
+        })
+        print("event added at", datetime.datetime.now())
