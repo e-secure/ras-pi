@@ -198,7 +198,6 @@ class piHandler:
         eventId = "event" + str(counter)
         rfid_status=self.rfid.get()["status"]
         self.event_count += 1
-        
         self.events.update({
             eventId : {
                 "Event_id"   : eventId
