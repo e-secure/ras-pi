@@ -18,7 +18,6 @@ class piHandler:
         self.events         = self.connectTable("/")
        
         self.vehicle_status = self.vehicle.get()["status"]
-        #self.rfid_status    = self.rfid.get()["status"]
         self.img_count      = self.vehicle.get()["counter"]
         self.latitude       = self.location.get()["latitude"]
         self.longitude      = self.location.get()["longitude"]
@@ -65,7 +64,7 @@ class piHandler:
 
             rfid_status = self.rfid.get()["status"]
 
-            if rfid_status == "locked" or rfid_status == "lost" or rfid_status == "new_key":
+            if rfid_status == "locked" or rfid_status == "lost" or rfid_status == "reset":
                 self.vehicle_status = "Unauthorized movement"
                 self.vehicle.update({
                     "status": self.vehicle_status
@@ -96,7 +95,7 @@ class piHandler:
                         self.update_rfid(0)
                 finally:
                     GPIO.cleanup()
-            elif rfid_status == "new_key":
+            elif rfid_status == "reset":
                 newpass=""
                 try:
                     print("Place tag on the reader")
