@@ -15,10 +15,11 @@ class piHandler:
         self.vehicle        = self.vehicles_db.child(self.GAADI_CONST)
         self.location       = self.vehicle.child("location")
         self.rfid           = self.vehicle.child("rfid")
-        self.events         = self.connectTable("/")
+        self.events         = self.connectTable("")
        
         self.vehicle_status = self.vehicle.get()["status"]
-        self.img_count      = self.vehicle.get()["counter"]
+        self.images         = self.vehicle.child("images")
+        self.img_count      = self.images.get()["counter"]
         self.latitude       = self.location.get()["latitude"]
         self.longitude      = self.location.get()["longitude"]
         self.event_count    = self.events.get()["counter"]
@@ -64,8 +65,8 @@ class piHandler:
 
             rfid_status = self.rfid.get()["status"]
 
-            if rfid_status == "locked" or rfid_status == "lost" or rfid_status == "reset":
-                self.vehicle_status = "Unauthorized movement"
+            if rfid_status == "locked" or rfid_status == "lost" or rfid_status == "new_key":
+                self.vehicle_status = "unauthorized movement"
                 self.vehicle.update({
                     "status": self.vehicle_status
                 })
@@ -95,7 +96,7 @@ class piHandler:
                         self.update_rfid(0)
                 finally:
                     GPIO.cleanup()
-            elif rfid_status == "reset":
+            elif rfid_status == "new_key":
                 newpass=""
                 try:
                     print("Place tag on the reader")
@@ -125,15 +126,18 @@ class piHandler:
                 rfid_status = "unlocked"
             elif rfid_status == "unlocked":
                 rfid_status = "locked"
-            if self.vehicle_status == "Unauthorized access":
+            if self.vehicle_status == "unauthorized access":
                 self.vehicle_status = "secure"
         elif x==2:
             print("correct password.. Invalid Key.")
-            self.vehicle_status = "Unauthorized access"
-            rfid_status = "locked"
+            if self.vehicle_status!="unauthorized movement":
+                self.vehicle_status = "unauthorized access"
+            if rfid_status != "lost" or rfid_status != "new_key":
+                rfid_status = "locked"
         else:
-            print("Incorrect password.. Unauthorized access")
-            self.vehicle_status = "Unauthorized access"
+            print("Incorrect password.. unauthorized access")
+            if self.vehicle_status!="unauthorized movement":
+                self.vehicle_status = "unauthorized access"
             if rfid_status == "locked" or rfid_status == "unlocked":
                 rfid_status = "locked"
         self.vehicle.update({
@@ -148,7 +152,8 @@ class piHandler:
     
     def get_camera(self):
         while True:
-            if self.vehicle_status != "secure":
+            vehicle_status = self.vehicle.get()["status"]
+            if vehicle_status != "secure":
                 cam = picamera.PiCamera()
                 cam.resolution=(256,256)
                 cam.brightness=60
@@ -170,6 +175,7 @@ class piHandler:
         ctr=ctr.zfill(5)
         img = "IMG_" + ctr
         images.update({
+            "counter": self.img_count,
             img : {
                 "base64": bs64,
                 "dateTime": str(datetime.datetime.now()),
@@ -183,10 +189,6 @@ class piHandler:
         print("updated image at", datetime.datetime.now())
 
         self.img_count += 1
-
-        self.vehicle.update({
-            "counter": self.img_count
-        })
         print("updated image count:", self.img_count, "at",
              datetime.datetime.now())
 
@@ -197,9 +199,10 @@ class piHandler:
         eventId = "event" + str(counter)
         rfid_status=self.rfid.get()["status"]
         self.event_count += 1
+        
         self.events.update({
             eventId : {
-                "Event_id"   : eventId
+                "Event_id"   : eventId,
                 "Vehicle_id" : self.GAADI_CONST,
                 "time"       : date,
                 "status"     : self.vehicle_status,
